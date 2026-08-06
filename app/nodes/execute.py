@@ -1,9 +1,16 @@
+from langgraph.runtime import Runtime
+
+from app.graph.context import RuntimeContext
+
 from app.core.logging import logger
 from app.graph.state import AgentState
 
 #---------------- Execute Node ----------------
 
-def execute_node(state: AgentState) -> AgentState:
+def execute_node(
+    state: AgentState,
+    runtime: Runtime[RuntimeContext],
+) -> AgentState:
     """
     Execute the action selected by the Router.
 
@@ -16,14 +23,40 @@ def execute_node(state: AgentState) -> AgentState:
     logger.info("Execute Node started.")
 
     route = state["route"]
-
+    request = state["request"]
     try:
 
         # ---------------- AUTO REPLY ----------------
 
         if route == "AUTO_REPLY":
 
-            result = simulate_auto_reply()
+            gmail = runtime.context.services.gmail
+
+            if gmail.service is None:
+                gmail.authenticate()
+            gmail.send_reply(
+                to_email=request.sender,
+                subject=request.subject,
+                body="""
+        Hello,
+
+        Thank you for contacting us.
+
+        We have received your request.
+
+        Our support team will contact you shortly.
+
+        Best regards,
+        AutoOps AI
+        """,
+            )
+        # Mark the original email as read
+        if "id" in state["raw_request"]:
+            gmail.mark_as_processed(
+                state["raw_request"]["id"]
+            )
+
+            result = "Email reply sent successfully."
 
         # ---------------- CREATE TICKET ----------------
 
@@ -66,13 +99,6 @@ def execute_node(state: AgentState) -> AgentState:
         return {
     "error": str(e),
 }
-
-
-def simulate_auto_reply():
-
-    logger.info("Simulating email reply...")
-
-    return "Email reply sent successfully."
 
 
 def simulate_create_ticket():

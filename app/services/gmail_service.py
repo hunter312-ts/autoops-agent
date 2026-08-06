@@ -1,4 +1,5 @@
-import token
+import base64
+from email.mime.text import MIMEText
 
 from tenacity import (
     retry,
@@ -6,17 +7,14 @@ from tenacity import (
     wait_exponential,
     retry_if_exception_type,
 )
-from googleapiclient.errors import HttpError
-from pathlib import Path
-import os
-import base64
-from email.header import decode_header
-from app.config.runtime import RuntimeConfig
+
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
+from app.config.runtime import RuntimeConfig
 from app.core.logging import logger
 
 
@@ -39,7 +37,6 @@ class GmailService:
         self.token_path = config.gmail_token_path
 
         self.service = None
-
 
     
     @retry(
@@ -194,6 +191,7 @@ class GmailService:
         """
 
         return {
+            "id": email["id"],
             "source": "gmail",
             "sender": email["sender"],
             "subject": email["subject"],
@@ -225,4 +223,43 @@ class GmailService:
         except Exception as e:
             logger.error(f"Failed to mark email as processed: {e}")
             raise
+
+    @retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type(HttpError),
+    reraise=True,
+)
+    def send_reply(
+        self,
+        to_email: str,
+        subject: str,
+        body: str,
+    ):
+        """
+        Send an email using the authenticated Gmail account.
+        """
+
+        if self.service is None:
+            raise RuntimeError(
+                "GmailService.authenticate() must be called first."
+            )
+
+        logger.info(f"Sending reply to {to_email}...")
+
+        message = MIMEText(body)
+
+        message["to"] = to_email
+        message["subject"] = f"Re: {subject}"
+
+        raw = base64.urlsafe_b64encode(
+            message.as_bytes()
+        ).decode()
+
+        self.service.users().messages().send(
+            userId="me",
+            body={"raw": raw},
+        ).execute()
+
+        logger.info("Reply sent successfully.")
 

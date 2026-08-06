@@ -6,7 +6,10 @@ Provides the LangGraph checkpoint backend.
 The checkpointer stores workflow state whenever the graph
 is interrupted, allowing execution to resume later.
 """
-from langgraph.checkpoint.memory import MemorySaver
+import sqlite3
+from app.core.config import settings
+
+from langgraph.checkpoint.sqlite import SqliteSaver
 from app.core.logging import logger
 
 class GraphCheckpointer:
@@ -19,10 +22,19 @@ class GraphCheckpointer:
     def __init__(self):
 
         logger.info("Initializing LangGraph Checkpointer...")
+        db_path = settings.DATABASE_URL.replace(
+            "sqlite:///",
+            ""
+        )
 
-        self.memory = MemorySaver()
+        self.connection = sqlite3.connect(
+            db_path,
+            check_same_thread=False,
+        )
+
+        self.checkpointer = SqliteSaver(self.connection)
 
     def get_checkpointer(self):
 
-        return self.memory
+        return self.checkpointer
 graph_checkpointer = GraphCheckpointer()
