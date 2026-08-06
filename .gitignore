@@ -1,0 +1,30 @@
+# Environment
+.env
+
+# Gmail OAuth
+credentials.json
+token.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Virtual Environment
+venv/
+.venv/
+
+# Cache
+__pycache__/
+*.py[cod]
+
+# Logs
+logs/
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Development / Testing
+test_*.py
+test.ipynb
