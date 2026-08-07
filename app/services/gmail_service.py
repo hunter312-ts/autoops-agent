@@ -176,6 +176,7 @@ class GmailService:
                 emails.append(
                     {
                         "id": message["id"],
+                        "thread_id": msg["threadId"],
                         "sender": sender,
                         "subject": subject,
                         "body": body,
@@ -192,6 +193,7 @@ class GmailService:
 
         return {
             "id": email["id"],
+            "thread_id": email["thread_id"],
             "source": "gmail",
             "sender": email["sender"],
             "subject": email["subject"],
@@ -224,6 +226,8 @@ class GmailService:
             logger.error(f"Failed to mark email as processed: {e}")
             raise
 
+
+    
     @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=10),
@@ -235,6 +239,7 @@ class GmailService:
         to_email: str,
         subject: str,
         body: str,
+        thread_id: str | None = None,
     ):
         """
         Send an email using the authenticated Gmail account.
@@ -256,10 +261,15 @@ class GmailService:
             message.as_bytes()
         ).decode()
 
-        self.service.users().messages().send(
+        
+        request_body = {"raw": raw}
+        if thread_id:
+            request_body["threadId"] = thread_id
+        response=(self.service.users().messages().send(
             userId="me",
-            body={"raw": raw},
+            body=request_body,
+        )
         ).execute()
-
+        return response
         logger.info("Reply sent successfully.")
 

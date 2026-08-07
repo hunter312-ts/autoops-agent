@@ -36,6 +36,7 @@ def process_request(request: ProcessRequest):
             "sender": request.sender,
             "subject": request.subject,
             "body": request.body,
+            "thread_id": None,
         },
         "request": None,
         "classification": None,

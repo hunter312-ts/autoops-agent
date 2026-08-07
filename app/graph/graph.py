@@ -7,8 +7,9 @@ from app.nodes.classify import classify_node
 from app.nodes.execute import execute_node
 from app.nodes.approve import approve_node
 from app.nodes.log import log_node
+from app.graph.context import RuntimeContext
 
-builder = StateGraph(AgentState)
+builder = StateGraph(AgentState,context_schema=RuntimeContext,)
 
 # ---------------- Nodes ----------------
 

@@ -17,6 +17,8 @@ def classify_node(
     logger.info("Starting Classification Node...")
 
     try:
+        logger.info(runtime.context.services.groq)
+        logger.info(state["request"])
         classification = runtime.context.services.groq.classify(
             state["request"]
         )

@@ -53,10 +53,11 @@ def process_emails(runtime_config: RuntimeConfig) -> None:
 
             logger.info("-" * 60)
             logger.info(f"Processing: {email['subject']}")
-
+            print(f"Email: {email}")
             raw_request = services.gmail.convert_to_raw_request(
                 email
             )
+            print(f"Raw Request: {raw_request}")
 
             state = {
                 "thread_id": thread_id,

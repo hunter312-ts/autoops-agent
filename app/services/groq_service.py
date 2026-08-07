@@ -117,3 +117,54 @@ Message:
             )
 
             raise
+
+
+    @retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(
+        multiplier=1,
+        min=2,
+        max=10,
+    ),
+    reraise=True,
+)
+    def generate_reply(
+    self,
+    request: SupportRequest,
+) -> str:
+        """
+        Generate an AI email reply.
+        """
+
+        system_prompt = self.load_prompt(
+            "reply_prompt.txt"
+        )
+
+        user_prompt = f"""
+    Subject:
+    {request.subject}
+
+    Customer Email:
+    {request.body}
+    """
+
+        response = self.client.chat.completions.create(
+            model=self.model,
+            temperature=0.3,
+            messages=[
+                {
+                    "role": "system",
+                    "content": system_prompt,
+                },
+                {
+                    "role": "user",
+                    "content": user_prompt,
+                },
+            ],
+        )
+
+        reply = response.choices[0].message.content.strip()
+    
+        logger.info("AI reply generated successfully.")
+
+        return reply

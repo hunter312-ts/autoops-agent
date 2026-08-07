@@ -32,3 +32,5 @@ class AgentState(TypedDict):
 
     # Error message
     error: Optional[str]
+
+    generated_reply: Optional[str]

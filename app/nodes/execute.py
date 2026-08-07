@@ -31,32 +31,34 @@ def execute_node(
         if route == "AUTO_REPLY":
 
             gmail = runtime.context.services.gmail
+            groq = runtime.context.services.groq
 
             if gmail.service is None:
                 gmail.authenticate()
+
+            # Generate AI reply
+            reply = groq.generate_reply(request)
+            logger.info(f"Raw request = {state['raw_request']}")
+            # Send AI reply
             gmail.send_reply(
                 to_email=request.sender,
                 subject=request.subject,
-                body="""
-        Hello,
-
-        Thank you for contacting us.
-
-        We have received your request.
-
-        Our support team will contact you shortly.
-
-        Best regards,
-        AutoOps AI
-        """,
-            )
-        # Mark the original email as read
-        if "id" in state["raw_request"]:
-            gmail.mark_as_processed(
-                state["raw_request"]["id"]
+                body=reply,
+                thread_id=state["raw_request"].get("thread_id"),
             )
 
-            result = "Email reply sent successfully."
+            # Save generated reply in state (optional but recommended)
+            state["generated_reply"] = reply
+
+            # Mark the original email as read
+            if "id" in state["raw_request"]:
+                gmail.mark_as_processed(
+                    state["raw_request"]["id"]
+                )
+
+            result = (
+    f"AI reply sent successfully to {request.sender}"
+)
 
         # ---------------- CREATE TICKET ----------------
 
