@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str
     LANGSMITH_API_KEY: str = ""
     LANGSMITH_PROJECT: str = "AutoOps-Agent"
-    DATABASE_URL: str = "sqlite:///autoops.db"
+    DATABASE_URL: str = "sqlite:///data/autoops.db"
     DEBUG: bool = True
     model_config = SettingsConfigDict(
         env_file=".env",

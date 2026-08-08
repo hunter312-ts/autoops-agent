@@ -9,6 +9,8 @@ token.json
 *.db
 *.sqlite
 *.sqlite3
+*.db-wal
+*.db-shm
 
 # Virtual Environment
 venv/
@@ -26,7 +28,8 @@ logs/
 .ipynb_checkpoints/
 
 # Development / Testing
-test_*.py
+/test_*.py
 test.ipynb
 
-*.db-wal/*.db-shm
+data/credentials.json
+data/token.json

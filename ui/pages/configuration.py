@@ -63,13 +63,16 @@ def show_configuration_page():
 
             return
 
-        credentials_path = Path("credentials.json")
+        data_dir = Path("data")
+        data_dir.mkdir(parents=True, exist_ok=True)
+
+        credentials_path = data_dir / "credentials.json"
 
         with open(credentials_path, "wb") as f:
 
             f.write(uploaded_credentials.getbuffer())
 
-        token_path = Path("token.json")
+        token_path = data_dir / "token.json"
 
         runtime_config = RuntimeConfig(
             groq_api_key=groq_api_key,

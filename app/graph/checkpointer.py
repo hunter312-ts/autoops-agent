@@ -14,7 +14,7 @@ from app.core.logging import logger
 
 class GraphCheckpointer:
     """
-    Wrapper around LangGraph's MemorySaver.
+    Wrapper around LangGraph's SqliteSaver.
 
     This class centralizes checkpoint configuration so that
     we can easily switch to SQLite/Postgres later.
